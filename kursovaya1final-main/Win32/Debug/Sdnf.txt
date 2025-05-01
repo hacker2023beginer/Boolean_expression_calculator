@@ -1,0 +1,1 @@
+SDNF: (not A and C) or (A and not C)

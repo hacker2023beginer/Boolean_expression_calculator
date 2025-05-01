@@ -1,0 +1,17 @@
+program Project3;
+
+uses
+  Vcl.Forms,
+  UnitMain in 'UnitMain.pas' {Form1},
+  UnitTruthTable in 'UnitTruthTable.pas',
+  UnitSdnfSknf in 'UnitSdnfSknf.pas',
+  UnitPolinomZh in 'UnitPolinomZh.pas';
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  AApplication.CreateForm(TForm1, Form1);
+  pplication.Run;
+end.

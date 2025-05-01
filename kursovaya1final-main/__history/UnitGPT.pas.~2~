@@ -1,0 +1,156 @@
+unit UnitGPT;
+
+interface
+
+uses
+  System.SysUtils, StrUtils, UnitTruthTable;
+
+type
+  TMinterm = record
+    Bits: string;
+    Merged: Boolean;
+    Covered: array of Integer;
+  end;
+
+  TMintermList = array of TMinterm;
+  TCoverTable = array of array of Boolean;
+
+procedure CvMacClasky(TruthTable: TTruth);
+
+implementation
+
+procedure AddMinterm(var List: TMintermList; Bits: string; Index: Integer);
+begin
+  SetLength(List, Length(List) + 1);
+  List[High(List)].Bits := Bits;
+  List[High(List)].Merged := False;
+  SetLength(List[High(List)].Covered, 1);
+  List[High(List)].Covered[0] := Index;
+end;
+
+procedure CombineMinterms(var MList: TMintermList; var PrimeList: TMintermList);
+var
+  CombinedList: TMintermList;
+  Used: array of Boolean;
+  i, j, k, diff: Integer;
+  newBits: string;
+  merged: Boolean;
+begin
+  SetLength(Used, Length(MList));
+  for i := 0 to High(MList) do
+  begin
+    merged := False;
+    for j := i + 1 to High(MList) do
+    begin
+      diff := 0;
+      newBits := '';
+      for k := 1 to Length(MList[i].Bits) do
+      begin
+        if MList[i].Bits[k] = MList[j].Bits[k] then
+          newBits := newBits + MList[i].Bits[k]
+        else
+        begin
+          Inc(diff);
+          newBits := newBits + '-';
+        end;
+      end;
+
+      if diff = 1 then
+      begin
+        merged := True;
+        Used[i] := True;
+        Used[j] := True;
+
+        var NewTerm: TMinterm;
+        NewTerm.Bits := newBits;
+        NewTerm.Merged := False;
+        NewTerm.Covered := MList[i].Covered + MList[j].Covered;
+
+        SetLength(CombinedList, Length(CombinedList) + 1);
+        CombinedList[High(CombinedList)] := NewTerm;
+      end;
+    end;
+    if not Used[i] then
+    begin
+      SetLength(PrimeList, Length(PrimeList) + 1);
+      PrimeList[High(PrimeList)] := MList[i];
+    end;
+  end;
+  if Length(CombinedList) > 0 then
+    CombineMinterms(CombinedList, PrimeList);
+end;
+
+procedure BuildCoverTable(PrimeList: TMintermList; MintermIndices: array of Integer; out Table: TCoverTable);
+var
+  i, j, k: Integer;
+begin
+  SetLength(Table, Length(MintermIndices), Length(PrimeList));
+  for i := 0 to High(MintermIndices) do
+    for j := 0 to High(PrimeList) do
+      for k := 0 to High(PrimeList[j].Covered) do
+        if PrimeList[j].Covered[k] = MintermIndices[i] then
+        begin
+          Table[i][j] := True;
+          Break;
+        end;
+end;
+
+procedure SelectEssentialImplicants(Table: TCoverTable; PrimeList: TMintermList; out Essentials: TMintermList);
+var
+  i, j, k, count, last: Integer;
+  Selected: array of Boolean;
+begin
+  SetLength(Selected, Length(PrimeList));
+  for i := 0 to High(Table) do
+  begin
+    count := 0;
+    last := -1;
+    for j := 0 to High(Table[i]) do
+    begin
+      if Table[i][j] then
+      begin
+        Inc(count);
+        last := j;
+      end;
+    end;
+    if (count = 1) and (not Selected[last]) then
+    begin
+      SetLength(Essentials, Length(Essentials) + 1);
+      Essentials[High(Essentials)] := PrimeList[last];
+      Selected[last] := True;
+    end;
+  end;
+end;
+
+procedure CvMacClasky(TruthTable: TTruth);
+var
+  MList, PrimeList, Essentials: TMintermList;
+  Table: TCoverTable;
+  Binary: string;
+  i, j, index: Integer;
+  MintermIndices: array of Integer;
+begin
+  for i := 0 to High(TruthTable) do
+  begin
+    if TruthTable[i][High(TruthTable[i])] then
+    begin
+      Binary := '';
+      for j := 0 to High(TruthTable[i]) - 1 do
+        Binary := Binary + IfThen(TruthTable[i][j], '1', '0');
+      AddMinterm(MList, Binary, i);
+      SetLength(MintermIndices, Length(MintermIndices) + 1);
+      MintermIndices[High(MintermIndices)] := i;
+    end;
+  end;
+
+  CombineMinterms(MList, PrimeList);
+  BuildCoverTable(PrimeList, MintermIndices, Table);
+  SelectEssentialImplicants(Table, PrimeList, Essentials);
+
+  // Вывод результата в консоль (или в Memo/Log)
+  for i := 0 to High(Essentials) do
+    Writeln('Essential implicant: ', Essentials[i].Bits);
+end;
+
+end.
+

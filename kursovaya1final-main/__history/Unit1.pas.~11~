@@ -1,0 +1,192 @@
+unit Unit1;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
+
+type
+  TMasBuf = array of String[255];
+  TForm1 = class(TForm)
+    Panel1: TPanel;
+    Edit1: TEdit;
+    Panel2: TPanel;
+    btnA: TButton;
+    btnB: TButton;
+    btnC: TButton;
+    btnD: TButton;
+    btnAnd: TButton;
+    btnNot: TButton;
+    btnOr: TButton;
+    btnXor: TButton;
+    btnTruthTable: TButton;
+    btnEqual: TButton;
+    btnCleanAll: TButton;
+    btnBackspase: TButton;
+    procedure btnAClick(Sender: TObject);
+    procedure btnBClick(Sender: TObject);
+    procedure btnCClick(Sender: TObject);
+    procedure btnDClick(Sender: TObject);
+    procedure btnAndClick(Sender: TObject);
+    procedure btnOrClick(Sender: TObject);
+    procedure btnXorClick(Sender: TObject);
+    procedure btnNotClick(Sender: TObject);
+    procedure btnBackspaseClick(Sender: TObject);
+  private
+    //LastButtonText: string[255];
+    InputBuffer: TMasBuf;
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+{$R *.dfm}
+
+procedure TForm1.btnAClick(Sender: TObject);
+begin
+  btnA.Enabled := false;
+  btnB.Enabled := false;
+  btnC.Enabled := false;
+  btnD.Enabled := false;
+  btnNot.Enabled := false;
+  btnAnd.Enabled := true;
+  btnOr.Enabled := true;
+  btnXor.Enabled := true;
+
+  SetLength(InputBuffer, Length(InputBuffer) + 1);
+  InputBuffer[Length(InputBuffer) - 1] :=  'A';
+  Edit1.Text := Edit1.Text + 'A';
+end;
+
+procedure TForm1.btnAndClick(Sender: TObject);
+begin
+  btnAnd.Enabled := false;
+  btnOr.Enabled := false;
+  btnXor.Enabled := false;
+  btnNot.Enabled := true;
+  btnA.Enabled := true;
+  btnB.Enabled := true;
+  btnC.Enabled := true;
+  btnD.Enabled := true;
+
+  SetLength(InputBuffer, Length(InputBuffer) + 1);
+  InputBuffer[Length(InputBuffer) - 1] :=  ' and ';
+  Edit1.Text := Edit1.Text + ' and ';
+end;
+
+procedure TForm1.btnBClick(Sender: TObject);
+begin
+  btnA.Enabled := false;
+  btnB.Enabled := false;
+  btnC.Enabled := false;
+  btnD.Enabled := false;
+  btnNot.Enabled := false;
+  btnAnd.Enabled := true;
+  btnOr.Enabled := true;
+  btnXor.Enabled := true;
+
+  SetLength(InputBuffer, Length(InputBuffer) + 1);
+  InputBuffer[Length(InputBuffer) - 1] :=  'B';
+  Edit1.Text := Edit1.Text + 'B';
+end;
+
+procedure TForm1.btnCClick(Sender: TObject);
+begin
+  btnA.Enabled := false;
+  btnB.Enabled := false;
+  btnC.Enabled := false;
+  btnD.Enabled := false;
+  btnNot.Enabled := false;
+  btnAnd.Enabled := true;
+  btnOr.Enabled := true;
+  btnXor.Enabled := true;
+
+  SetLength(InputBuffer, Length(InputBuffer) + 1);
+  InputBuffer[Length(InputBuffer) - 1] :=  'C';
+  Edit1.Text := Edit1.Text + 'C';
+end;
+
+procedure TForm1.btnDClick(Sender: TObject);
+begin
+  btnA.Enabled := false;
+  btnB.Enabled := false;
+  btnC.Enabled := false;
+  btnD.Enabled := false;
+  btnNot.Enabled := false;
+  btnAnd.Enabled := true;
+  btnOr.Enabled := true;
+  btnXor.Enabled := true;
+
+  SetLength(InputBuffer, Length(InputBuffer) + 1);
+  InputBuffer[Length(InputBuffer) - 1] :=  'D';
+  Edit1.Text := Edit1.Text + 'D';
+end;
+
+procedure TForm1.btnNotClick(Sender: TObject);
+begin
+  btnAnd.Enabled := false;
+  btnOr.Enabled := false;
+  btnXor.Enabled := false;
+  btnNot.Enabled := false;
+  btnA.Enabled := true;
+  btnB.Enabled := true;
+  btnC.Enabled := true;
+  btnD.Enabled := true;
+
+  SetLength(InputBuffer, Length(InputBuffer) + 1);
+  InputBuffer[Length(InputBuffer) - 1] :=  'not ';
+  Edit1.Text := Edit1.Text + 'not ';
+end;
+
+procedure TForm1.btnOrClick(Sender: TObject);
+begin
+  btnAnd.Enabled := false;
+  btnOr.Enabled := false;
+  btnXor.Enabled := false;
+  btnNot.Enabled := true;
+  btnA.Enabled := true;
+  btnB.Enabled := true;
+  btnC.Enabled := true;
+  btnD.Enabled := true;
+
+  SetLength(InputBuffer, Length(InputBuffer) + 1);
+  InputBuffer[Length(InputBuffer) - 1] :=  ' or ';
+  Edit1.Text := Edit1.Text + ' or ';
+end;
+
+procedure TForm1.btnXorClick(Sender: TObject);
+begin
+  btnAnd.Enabled := false;
+  btnOr.Enabled := false;
+  btnXor.Enabled := false;
+  btnNot.Enabled := true;
+  btnA.Enabled := true;
+  btnB.Enabled := true;
+  btnC.Enabled := true;
+  btnD.Enabled := true;
+
+  SetLength(InputBuffer, Length(InputBuffer) + 1);
+  InputBuffer[Length(InputBuffer) - 1] :=  ' xor ';
+  Edit1.Text := Edit1.Text + ' xor ';
+end;
+
+procedure TForm1.btnBackspaseClick(Sender: TObject);
+var
+  tempStr: string[255];
+begin
+  if length(InputBuffer) <> 0 then
+  begin
+    tempStr := Edit1.Text;
+    Delete(tempStr, Length(Edit1.Text) - Length(InputBuffer[Length(InputBuffer) - 1]) + 1, Length(InputBuffer[Length(InputBuffer) - 1]));
+    Edit1.Text := tempStr;
+    SetLength(InputBuffer, Length(InputBuffer) - 1);
+  end;
+end;
+
+end.

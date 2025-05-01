@@ -1,0 +1,1 @@
+SKNF: (A or C) and (not A or not C)

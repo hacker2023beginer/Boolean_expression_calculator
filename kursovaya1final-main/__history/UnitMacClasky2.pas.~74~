@@ -1,0 +1,471 @@
+unit UnitMacClasky2;
+
+interface
+
+uses
+  UnitTruthTable;
+
+type
+  RMinterm = record
+    Value: String;
+    NumOfTruth: Integer;
+  end;
+  TMinterms = array of RMinterm;
+
+  RCoverage = record
+    Value: String;
+    Coverage: array of String;
+  end;
+
+  PCoverageList = ^TElem;
+  TElem = record
+    Name: string;
+    Next: PCoverageList;
+  end;
+
+  RCoverageList = record
+    Value: String;
+    Coverage: PCoverageList;
+    LengthCoverage: Integer;
+  end;
+
+  //TCoverage = array of RCoverageList;
+  TCoverageList = array of RCoverageList;
+var
+  PrimeMinterms: array of String;
+  AnswerPrimeMinterms: TCoverageList;
+
+procedure ComapisonMinterms(FirstMinterm, SecondMinterm: RMinterm;
+                            var CounterCovering: Integer; var CheckPrime: Boolean;
+                            var MasMinterm2: TMinterms; var ChangesElements: Boolean;
+                            var CounterMas2: Integer; var StringOfMinterms: String);
+procedure GroupingMinterms(var MasMinterm1: TMinterms; var CounterGroups: Integer);
+procedure CvMacClasky(TruthTable: TTruth);
+procedure FindingCoverage(MasTableTruthMinterms: TMinterms; PrimeMinterms: array of String; var AnswerPrimeMinterms: TCoverageList);
+procedure ParseAnswerPrimes(AnswerPrimeMinterms: TCoverageList);
+
+implementation
+
+procedure ComapisonMinterms(FirstMinterm, SecondMinterm: RMinterm;
+                            var CounterCovering: Integer; var CheckPrime: Boolean;
+                            var MasMinterm2: TMinterms; var ChangesElements: Boolean;
+                            var CounterMas2: Integer; var StringOfMinterms: String);
+var
+  CounterDiffEl: Integer;
+  NewElOfMas2: RMinterm;
+begin
+  CounterDiffEl := 0;
+  NewElOfMas2.Value := '';
+  NewElOfMas2.NumOfTruth := 0;
+
+  for var i := 1 to Length(FirstMinterm.Value) do  // Исправлено: индексация строки с 1
+  begin
+    if FirstMinterm.Value[i] <> SecondMinterm.Value[i] then
+    begin
+      Inc(CounterDiffEl);
+      NewElOfMas2.Value := NewElOfMas2.Value + '-';
+    end
+    else
+    begin
+      if FirstMinterm.Value[i] = '1' then
+        Inc(NewElOfMas2.NumOfTruth);
+      NewElOfMas2.Value := NewElOfMas2.Value + FirstMinterm.Value[i];
+    end;
+  end;
+
+  if (CounterDiffEl = 1) and (Pos(NewElOfMas2.Value, StringOfMinterms) = 0) then
+  begin
+    ChangesElements := true;
+    CheckPrime := false;
+    if CounterMas2 >= Length(MasMinterm2) then  // Исправлено условие: >= вместо =
+      SetLength(MasMinterm2, Length(MasMinterm2) + 10);
+    MasMinterm2[CounterMas2] := NewElOfMas2;  // Исправлено смещение индекса -1
+    Inc(CounterMas2);
+    StringOfMinterms := StringOfMinterms + NewElOfMas2.Value + ' ';
+  end;
+end;
+
+procedure GroupingMinterms(var MasMinterm1: TMinterms; var CounterGroups: Integer);
+var
+  last: Integer;
+  Sorted: Boolean;
+  tempChangeMinterm: RMinterm;
+begin
+  Sorted := false;
+  last := Length(MasMinterm1) - 1;
+  while not Sorted do
+  begin
+    Sorted := true;
+    for var i := 0 to last - 1 do
+    begin
+      if MasMinterm1[i].NumOfTruth > MasMinterm1[i + 1].NumOfTruth then
+      begin
+        tempChangeMinterm := MasMinterm1[i];
+        MasMinterm1[i] := MasMinterm1[i + 1];
+        MasMinterm1[i + 1] := tempChangeMinterm;
+        Sorted := false;
+      end;
+    end;
+    Dec(last);
+  end;
+
+  CounterGroups := 1;
+  for var i := 0 to Length(MasMinterm1) - 2 do
+  begin
+    if MasMinterm1[i].NumOfTruth <> MasMinterm1[i + 1].NumOfTruth then
+      Inc(CounterGroups);
+  end;
+end;
+
+procedure CvMacClasky(TruthTable: TTruth);
+var
+  MasTableTruthMinterms: TMinterms;
+  CounterMinterms: Integer;
+  MasMinterm1: TMinterms;
+  MasMinterm2: TMinterms;
+  //PrimeMinterms: array of String;
+  BinaryCombination: String;
+
+  ChangesElements: Boolean;
+  CounterGroups: Integer;
+  CurrElementGroup, NextElementGroup: Integer;
+  CounterSr1: Integer;
+  CounterSr2, CounterSr2temp: Integer;
+  FindNewGroup: Boolean;
+
+  CounterMas2: Integer;
+  StringOfMinterms: String;
+  CounterCovering: Integer;
+  CheckPrime: Boolean;
+  CounterPrimeMinterms: Integer;
+  NewPrimeMinterm: RMinterm;
+begin
+  SetLength(MasTableTruthMinterms, Length(TruthTable));
+  SetLength(MasMinterm1, Length(MasTableTruthMinterms));
+  SetLength(MasMinterm2, Length(MasTableTruthMinterms));
+  SetLength(PrimeMinterms, Length(MasTableTruthMinterms) + 20);
+  CounterMinterms := 0;
+
+  for var i := 0 to Length(TruthTable) - 1 do
+  begin
+    if TruthTable[i][High(TruthTable[i])] then  // Исправлено: Length(TruthTable[0]) - 1 заменено на High()
+    begin
+      MasTableTruthMinterms[CounterMinterms].Value := '';
+      MasTableTruthMinterms[CounterMinterms].NumOfTruth := 0;
+      for var j := 0 to High(TruthTable[i]) - 1 do  // Исправлено: High вместо Length - 2
+      begin
+        if TruthTable[i][j] then
+        begin
+          MasTableTruthMinterms[CounterMinterms].Value := MasTableTruthMinterms[CounterMinterms].Value + '1';
+          Inc(MasTableTruthMinterms[CounterMinterms].NumOfTruth);
+        end
+        else
+          MasTableTruthMinterms[CounterMinterms].Value := MasTableTruthMinterms[CounterMinterms].Value + '0';
+      end;
+      Inc(CounterMinterms);
+    end;
+  end;
+
+  SetLength(MasMinterm1, CounterMinterms);  // Исправлено: урезание под количество
+  for var i := 0 to CounterMinterms - 1 do
+    MasMinterm1[i] := MasTableTruthMinterms[i];
+
+  ChangesElements := true;
+  CounterSr1 := 0;
+  CounterMas2 := 0;
+  CounterPrimeMinterms := 0;
+  StringOfMinterms := '';
+
+  while ChangesElements do
+  begin
+    ChangesElements := false;
+    GroupingMinterms(MasMinterm1, CounterGroups);
+
+    if CounterGroups = 1 then        // Если только одна группа — это уже простые минтермы
+    begin
+      for var i := 0 to Length(MasMinterm1) - 1 do
+      begin
+        PrimeMinterms[CounterPrimeMinterms] := MasMinterm1[i].Value;
+        Inc(CounterPrimeMinterms);
+      end;
+      ChangesElements := false;
+    end
+    else
+    begin
+    if Length(MasMinterm1) > 0 then
+      CurrElementGroup := MasMinterm1[0].NumOfTruth;
+
+    CounterSr1 := 0;
+
+    for var i := 1 to CounterGroups - 1 do
+    begin
+      CounterSr2 := CounterSr1;
+      FindNewGroup := false;
+      while (CounterSr2 < Length(MasMinterm1)) and not FindNewGroup do
+      begin
+        if MasMinterm1[CounterSr2].NumOfTruth <> CurrElementGroup then
+        begin
+          FindNewGroup := true;
+          NextElementGroup := MasMinterm1[CounterSr2].NumOfTruth;
+        end
+        else
+          Inc(CounterSr2);
+      end;
+
+      while (CounterSr1 < Length(MasMinterm1)) and
+            (MasMinterm1[CounterSr1].NumOfTruth = CurrElementGroup) do
+      begin
+        CheckPrime := true;
+        CounterSr2temp := CounterSr2;
+        while (CounterSr2temp < Length(MasMinterm1)) and
+              (MasMinterm1[CounterSr2temp].NumOfTruth = NextElementGroup) do
+        begin
+          ComapisonMinterms(MasMinterm1[CounterSr1], MasMinterm1[CounterSr2temp], CounterCovering,
+                            CheckPrime, MasMinterm2, ChangesElements, CounterMas2, StringOfMinterms);
+          Inc(CounterSr2temp);
+        end;
+        {if CheckPrime then  //GPT
+        begin
+          PrimeMinterms[CounterPrimeMinterms] := MasMinterm1[CounterSr1].Value;
+          Inc(CounterPrimeMinterms);
+        end;} //GPT
+        Inc(CounterSr1);
+      end;
+
+      //if CounterSr2temp < Length(MasMinterm1) then
+      //  CurrElementGroup := MasMinterm1[CounterSr2temp - 1].NumOfTruth;  // изменил -1
+      CurrElementGroup := MasMinterm1[CounterSr1].NumOfTruth;
+      //CounterSr1 := CounterSr2temp;
+    end;
+
+    MasMinterm1 := Copy(MasMinterm2, 0, CounterMas2);
+    CounterMas2 := 0;
+    end;
+    {for var i := 0 to Length(MasMinterm1) - 1 do   //GPT
+    begin
+      if MasMinterm1[i].Value <> '' then
+      begin
+        PrimeMinterms[CounterPrimeMinterms] := MasMinterm1[i].Value;
+        Inc(CounterPrimeMinterms);
+      end;
+    end;}   //GPT
+  end;
+  if CounterGroups <> 1 then
+  begin
+    //SetLength(PrimeMinterms, Length(MasMinterm2) + 10); //
+    for var i := 0 to Length(MasMinterm2) - 1 do
+    begin
+      PrimeMinterms[CounterPrimeMinterms] := MasMinterm2[i].Value;
+      Inc(CounterPrimeMinterms);
+    end;
+  end;
+
+  FindingCoverage(MasTableTruthMinterms, PrimeMinterms, AnswerPrimeMinterms);
+  ParseAnswerPrimes(AnswerPrimeMinterms);
+
+  SetLength(MasTableTruthMinterms, 0);
+  SetLength(MasMinterm1, 0);
+  SetLength(MasMinterm2, 0);
+  SetLength(PrimeMinterms, 0);
+  SetLength(AnswerPrimeMinterms, 0);
+end;
+
+procedure FindingCoverage(MasTableTruthMinterms: TMinterms; PrimeMinterms: array of String; var AnswerPrimeMinterms: TCoverageList);
+var
+  LengthPrimeMinterms: Integer;
+  LengthMasTableTruthMinterms: Integer;
+  LengthMasOfPrimesAndCoverages: Integer;
+  tempSimpleToAnswer: PCoverageList;
+  tempSimple: PCoverageList;
+  //TempPrimeCoverage: RCoverageList;
+
+  MasOfPrimesAndCoverages: TCoverageList;
+  IndexOfMasElem, IndexOfCoverage: Integer;
+  CheckCoverage: Boolean;
+  IndexOfValue: Integer;
+  MaxCoverages: Integer;
+  IndexOfAnswPrime: Integer;
+  formed: Boolean;
+  TempCoverage: PCoverageList;
+  //Sorted: Boolean;
+  //last: Integer;
+  TempAnswerCoverages: PCoverageList;
+  AddrAfterDeletedEl, ElUndoDeleted: PCoverageList;
+begin
+  indexOfMasElem := 0;
+  LengthPrimeMinterms := 0;
+  SetLength(MasOfPrimesAndCoverages, High(PrimeMinterms));
+  while PrimeMinterms[LengthPrimeMinterms] <> '' do
+    Inc(LengthPrimeMinterms);
+  LengthMasTableTruthMinterms := 0;
+  while MasTableTruthMinterms[LengthMasTableTruthMinterms].Value <> '' do
+    Inc(LengthMasTableTruthMinterms);
+
+  for var i := Low(PrimeMinterms) to LengthPrimeMinterms - 1 do  //от 0 до 3???   <- везде пересмотреть High и Low, вообще не так работают
+  begin
+    new(MasOfPrimesAndCoverages[i].Coverage);     //^next;
+    new(MasOfPrimesAndCoverages[i].Coverage^.Next); //
+    TempCoverage := MasOfPrimesAndCoverages[i].Coverage;
+    MasOfPrimesAndCoverages[i].Value := PrimeMinterms[i];
+    //SetLength(MasOfPrimesAndCoverages[i].Coverage, Length(PrimeMinterms) - 1);
+    IndexOfCoverage := 0;
+    for var j := Low(MasTableTruthMinterms) to LengthMasTableTruthMinterms - 1 do
+    begin
+      CheckCoverage := true;
+      indexOfValue := 1;  // дин строки с 1
+      while (indexOfValue <= Length(MasTableTruthMinterms[j].Value)) and CheckCoverage do
+      begin
+        if (PrimeMinterms[i][indexOfValue] <> '-') and (MasTableTruthMinterms[j].Value[indexOfValue] <> PrimeMinterms[i][indexOfValue]) then
+          CheckCoverage := false;
+        Inc(indexOfValue);
+      end;
+      if CheckCoverage then
+      begin
+        new(TempCoverage^.Next);
+        TempCoverage := TempCoverage^.Next;
+        TempCoverage^.Name := MasTableTruthMinterms[j].Value;
+        //new(TempCoverage^.Next);
+        //TempCoverage := TempCoverage^.Next;
+        //MasOfPrimesAndCoverages[i].Coverage[IndexOfCoverage] := MasTableTruthMinterms[j].Value;
+        Inc(IndexOfCoverage);
+      end;
+    end;
+    TempCoverage^.Next := nil;
+    MasOfPrimesAndCoverages[i].LengthCoverage := IndexOfCoverage;
+  end;
+
+  IndexOfAnswPrime := 0;
+  formed := false;
+
+  //в отдельную процедуру
+  while not formed do
+  begin
+    MaxCoverages := 0;
+    for var i := low(MasOfPrimesAndCoverages) to High(MasOfPrimesAndCoverages) do
+    begin
+      IndexOfCoverage := MasOfPrimesAndCoverages[i].LengthCoverage;
+      if IndexOfCoverage > MaxCoverages then
+      begin
+        MaxCoverages := IndexOfCoverage;
+        SetLength(AnswerPrimeMinterms, Length(AnswerPrimeMinterms) + 1);
+        //AnswerPrimeMinterms[IndexOfAnswPrime] := MasOfPrimesAndCoverages[i];  //
+        AnswerPrimeMinterms[IndexOfAnswPrime].Value := MasOfPrimesAndCoverages[i].Value;
+        AnswerPrimeMinterms[IndexOfAnswPrime].LengthCoverage := MasOfPrimesAndCoverages[i].LengthCoverage;
+        new(AnswerPrimeMinterms[IndexOfAnswPrime].Coverage);
+        tempSimpleToAnswer := AnswerPrimeMinterms[IndexOfAnswPrime].Coverage;
+        tempSimple := MasOfPrimesAndCoverages[i].Coverage;
+        for var t := 0 to AnswerPrimeMinterms[IndexOfAnswPrime].LengthCoverage do
+        begin
+          if (t = 0) or (tempSimple^.Name <> '') then
+          begin
+            tempSimpleToAnswer^.Name := tempSimple^.Name;
+            tempSimple := tempSimple^.Next;
+            if (tempSimple <> nil) and (tempSimple^.Name <> '') then
+            begin
+              new(tempSimpleToAnswer^.Next);
+              tempSimpleToAnswer := tempSimpleToAnswer^.Next;
+            end
+            else
+              tempSimpleToAnswer^.Next := nil;
+          end;
+        end;
+        //tempSimpleToAnswer := nil; //
+      end;
+    end;
+    if MaxCoverages = 0 then
+      formed := true
+    else
+    begin
+      LengthMasOfPrimesAndCoverages := 0;
+      while (LengthMasOfPrimesAndCoverages < Length(MasOfPrimesAndCoverages)) and (MasOfPrimesAndCoverages[LengthMasOfPrimesAndCoverages].Value <> '') do
+        Inc(LengthMasOfPrimesAndCoverages);
+
+      //IndexOfValue := 0;
+      //TempAnswerCoverages := AnswerPrimeMinterms[IndexOfAnswPrime].Coverage;
+      for var i := 0 to LengthMasOfPrimesAndCoverages - 1 do         //неожид length
+      begin
+        ElUndoDeleted := MasOfPrimesAndCoverages[i].Coverage;
+        TempCoverage := MasOfPrimesAndCoverages[i].Coverage^.Next;
+        //TempPrimeCoverage := MasOfPrimesAndCoverages[i];
+        while TempCoverage <> nil do
+        begin
+          TempAnswerCoverages := AnswerPrimeMinterms[IndexOfAnswPrime].Coverage;
+          while TempAnswerCoverages <> nil do
+          begin
+            //if MasOfPrimesAndCoverages[i].Value = AnswerPrimeMinterms[IndexOfAnswPrime].Coverage[j] then
+            if TempAnswerCoverages^.Name = TempCoverage^.Name then
+            begin
+              AddrAfterDeletedEl := TempCoverage^.Next;
+              ElUndoDeleted^.Next := AddrAfterDeletedEl;
+              TempCoverage := ElUndoDeleted;
+              TempAnswerCoverages := nil;
+              Dec(MasOfPrimesAndCoverages[i].LengthCoverage);
+            end
+            else
+            begin
+              if TempAnswerCoverages^.Next = nil then
+                TempAnswerCoverages := nil
+              else
+                TempAnswerCoverages := TempAnswerCoverages^.Next;
+            end;
+          end;
+          if TempCoverage^.Next = nil then
+            TempCoverage := nil
+          else
+          begin
+            ElUndoDeleted := TempCoverage;
+            TempCoverage := TempCoverage^.Next;
+          end;
+        end;
+      end;
+      Inc(IndexOfAnswPrime);
+    end;
+  end;
+end;
+
+procedure ParseAnswerPrimes(AnswerPrimeMinterms: TCoverageList);
+var
+  IndexOfAnswPrime: Integer;
+  f: TextFile;
+  FirstPerem: Boolean;
+begin
+  IndexOfAnswPrime := 0;
+  AssignFile(f, 'MacClasky.txt');
+  Rewrite(f);
+  write(f, 'Minimization (MacClasky): ');
+  while (IndexOfAnswPrime < Length(AnswerPrimeMinterms)) and (AnswerPrimeMinterms[IndexOfAnswPrime].Value <> '') do
+  begin
+    FirstPerem := true;
+    for var i := 1 to Length(AnswerPrimeMinterms[IndexOfAnswPrime].Value) do
+    begin
+      case AnswerPrimeMinterms[IndexOfAnswPrime].Value[i] of
+        '1':
+        begin
+          if not FirstPerem then
+            write(f, ' and ');
+          write(f, StrOfPerem[i]);
+          FirstPerem := false;
+        end;
+        '0':
+        begin
+          //write(f, 'not ' + StrOfPerem[i]);
+          if not FirstPerem then
+          begin
+            write(f, ' and ');
+            write(f, 'not ' + StrOfPerem[i])
+          end
+          else
+            write(f, ' not ' + StrOfPerem[i]);
+          FirstPerem := false;
+        end;
+      end;
+    end;
+    if (IndexOfAnswPrime + 1 <> Length(AnswerPrimeMinterms)) and (AnswerPrimeMinterms[IndexOfAnswPrime + 1].Value <> '') then
+      write(f, ' or ');
+    Inc(IndexOfAnswPrime);
+  end;
+  CloseFile(f);
+end;
+
+end.
+

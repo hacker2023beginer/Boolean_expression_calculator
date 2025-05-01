@@ -1,0 +1,204 @@
+unit UnitTruthTable;
+
+interface
+
+uses
+  ShellApi, SysUtils, Vcl.StdCtrls, Windows;
+
+type
+  TTruth = array of array of Boolean;
+  PeremMAS = array of String;
+  FuncMAS = array of Integer;
+const
+  allFunc: array [1..4] of String = ('not', 'and', 'or', 'xor');
+var
+  TruthTable: TTruth;
+
+  BooleanFunc: String = 'not and or xor';  //доступные операции
+  ValueOfFunc: String[4];                  //приоритет операций
+  StrOfPerem: String;                      //все переменные в выражении
+  NumRows: Integer;                        //количество строк таблицы
+
+procedure GenerateTruthTable(NumVariables: Integer; var TruthTable: TTruth; var NumRows: Integer);
+procedure FillTruthTable(Edit1: TEdit);
+procedure OpenTextFile(const FileName: string);
+
+implementation
+
+procedure OpenTextFile(const FileName: string);
+begin
+  ShellExecute(0, 'open', PChar(FileName), nil, nil, SW_SHOWNORMAL);
+end;
+
+procedure GenerateTruthTable(NumVariables: Integer; var TruthTable: TTruth; var NumRows: Integer);
+var
+  i, j: Integer;
+begin
+  // Количество строк в таблице истинности = 2^NumVariables
+  NumRows := 1 shl NumVariables; // 2^NumVariables
+  SetLength(TruthTable, NumRows, NumVariables + 1);    //NumVariables
+
+  // Генерация всех комбинаций
+  for i := 0 to NumRows - 1 do
+    for j := 0 to NumVariables - 1 do
+      TruthTable[i][j] := (i shr (NumVariables - 1 - j)) and 1 = 1;
+end;
+
+procedure FillTruthTable(Edit1: TEdit);
+type
+  TElExpr = array of String; //массив элементов выражения
+var
+  MasOfEl: TElExpr;
+  Expression: String;
+  Element: String;
+  position: Integer;
+  counterPerem: Integer;
+  PolandStr: PeremMas;   //польская запись
+  StackFunc: FuncMAS;
+  NumOfPolandEl, NumOfStackFuncEl, NumOfStackPerEl: Integer;
+  StackPerem: array of Boolean;
+
+  f: TextFile;
+  //Virazh: String[255];
+begin
+  SetLength(StackFunc, 20); // Резервируем 100 элементов для стека функций
+  SetLength(PolandStr, 40);  // Резервируем 100 элементов для вывода
+
+  StrOfPerem := '';
+  Expression := Edit1.Text;                       //
+  MasOfEl := TElExpr(Expression.Split([' ']));    //
+
+  NumOfPolandEl := -1;
+  NumOfStackFuncEl := -1;
+  counterPerem := 0;
+  //WriteLn('Введите логическое выражение, заканчивающееся "stop":');
+  //Readln(Virazh);
+
+
+  // Основной цикл обработки
+
+  for ELement in MasOfEl do
+  begin
+    position := 0;
+    // Проверка, является ли ELement функцией
+    for var i := Low(allFunc) to High(allFunc) do
+      if ELement = allFunc[i] then
+        position := i;
+
+    if position = 0 then // Если это не функция
+    begin
+      Inc(NumOfPolandEl);
+      if NumOfPolandEl = Length(PolandStr) then
+        SetLength(PolandStr, Length(PolandStr) + 10);
+      PolandStr[NumOfPolandEl] := ELement; // Добавляем в польскую запись
+      if pos(ELement, StrOfPerem) = 0 then   //проверка на то, была ли эта переменная в выражении до этого
+      begin
+        Inc(counterPerem);
+        StrOfPerem := StrOfPerem + ELement;
+      end;
+    end
+    else // Если это функция
+    begin
+      // Обрабатываем стек функций
+      if (NumOfStackFuncEl >= 0) and (StackFunc[NumOfStackFuncEl] < position) then  //проверить на баги <= !!! сделать not
+      begin
+        while (NumOfStackFuncEl >= 0) do
+        begin
+          Inc(NumOfPolandEl);
+          if NumOfPolandEl = Length(PolandStr) then
+            SetLength(PolandStr, Length(PolandStr) + 10);
+          PolandStr[NumOfPolandEl] := IntToStr(StackFunc[NumOfStackFuncEl]);
+          Dec(NumOfStackFuncEl);
+        end;
+      end;
+      Inc(NumOfStackFuncEl);
+      if NumOfStackFuncEl = Length(StackFunc) then
+        SetLength(StackFunc, Length(StackFunc) + 10);
+      StackFunc[NumOfStackFuncEl] := position; // Добавляем функцию в стек
+    end;
+  end;
+  if NumOfStackFuncEl <> -1 then
+  begin
+    while (NumOfStackFuncEl >= 0) and (StackFunc[NumOfStackFuncEl] >= position) do       //одно лишнее условие?
+    begin
+      Inc(NumOfPolandEl);
+      if NumOfPolandEl = Length(PolandStr) then
+        SetLength(PolandStr, Length(PolandStr) + 10);
+      PolandStr[NumOfPolandEl] := IntToStr(StackFunc[NumOfStackFuncEl]);
+      Dec(NumOfStackFuncEl);
+    end;
+  end;
+  // Вывод результатов
+  //WriteLn('Результат преобразования:');
+  //for var i := 0 to NumOfPolandEl do
+  //  Write(PolandStr[i], '  ');
+  //WriteLn;
+
+  ValueOfFunc := '1234';   //приоритет операций
+  GenerateTruthTable(counterPerem, TruthTable, NumRows);
+  SetLength(StackPerem, counterPerem); //размер стека равен количеству переменных
+
+  AssignFile(f, 'TruthTable.txt');
+  Rewrite(f);
+  for var j := 1 to counterPerem do      //i = 5????
+  begin
+    write(f, StrOfPerem[j] + ' ');
+  end;
+  writeln(f, '| Result');
+  for var z := 0 to NumRows - 1 do
+  begin
+    NumOfStackPerEl := -1;
+    for var r := 0 to NumOfPolandEl do
+    begin
+      position := pos(PolandStr[r], ValueOfFunc);
+      if position = 0 then
+      begin
+        Inc(NumOfStackPerEl);
+        if NumOfStackPerEl = Length(StackPerem) then
+          SetLength(StackPerem, Length(StackPerem) + 5);
+        StackPerem[NumOfStackPerEl] := TruthTable[z][pos(PolandStr[r], StrOfPerem) - 1];   //занесение значения переменной в стек переменных
+      end
+      else
+      begin
+      //('not', 'and', 'or', 'xor')
+        case position of
+        1:
+        begin
+          StackPerem[NumOfStackPerEl] := not StackPerem[NumOfStackPerEl];
+        end;
+        2:
+        begin
+          Dec(NumOfStackPerEl);
+          StackPerem[NumOfStackPerEl] := StackPerem[NumOfStackPerEl] and StackPerem[NumOfStackPerEl + 1];
+          StackPerem[NumOfStackPerEl + 1] := false;
+        end;
+        3:
+        begin
+          Dec(NumOfStackPerEl);
+          StackPerem[NumOfStackPerEl] := StackPerem[NumOfStackPerEl] or StackPerem[NumOfStackPerEl + 1];
+          StackPerem[NumOfStackPerEl + 1] := false;
+        end;
+        4:
+        begin
+          Dec(NumOfStackPerEl);
+          StackPerem[NumOfStackPerEl] := StackPerem[NumOfStackPerEl] xor StackPerem[NumOfStackPerEl + 1];
+          StackPerem[NumOfStackPerEl + 1] := false;
+        end;
+        end;
+      end;
+    end;
+
+    for var k := 0 to counterPerem - 1 do
+    begin
+      write(f, TruthTable[z][k]);
+      write(f, ' ');
+    end;
+    TruthTable[z][counterPerem] := StackPerem[NumOfStackPerEl];
+    write(f, '| ');
+    writeln(f, TruthTable[z][counterPerem]);
+    //writeln(StackPerem[stackPer]);
+  end;
+  CloseFile(f);
+  //OpenTextFile('TruthTable.txt');
+end;
+end.

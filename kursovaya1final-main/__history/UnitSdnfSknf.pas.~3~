@@ -1,0 +1,85 @@
+unit UnitSdnfSknf;
+
+interface
+
+uses
+  UnitTruthTable;
+
+procedure SDNFandSKNF(TruthTable: TTruth; StrOfPerem: String);
+implementation
+
+procedure SDNFandSKNF(TruthTable: TTruth; StrOfPerem: String);
+var
+  h: Integer;
+  fSdnf: TextFile;
+  fSknf: TextFile;
+  StartFileSdnf, StartFileSknf: Boolean;
+  //CheckStartFile: String;
+begin
+  AssignFile(fSdnf, 'Sdnf.txt');
+  Rewrite(fSdnf);
+  StartFileSdnf := true;
+  AssignFile(fSknf, 'Sknf.txt');
+  Rewrite(fSknf);
+  StartFileSknf := true;
+  for var i := 0 to Length(TruthTable) - 1 do     //количество строк
+  begin
+    {проверка значения выражения. Если true, то Сднф, иначе - Скнф}
+    if TruthTable[i][Length(TruthTable[i]) - 1] = true then
+    begin
+      //Read(fSdnf, CheckStartFile);
+      if StartFileSdnf <> true then
+        write(fSdnf, ' or ');
+      StartFileSdnf := false;
+      write(fSdnf, '(');
+      for var j := 0 to Length(TruthTable[i]) - 2 do     //количество столбцов не считая столбец результата
+      begin
+        if TruthTable[i][j] = true then
+        begin
+          if j = 0 then
+            write(fSdnf, StrOfPerem[j + 1] + ' ')
+          else
+            write(fSdnf, ' and ' + StrOfPerem[j + 1]);
+        end
+        else
+        begin
+          if j = 0 then
+            write(fSdnf, 'not ' + StrOfPerem[j + 1] + ' ')
+          else
+            write(fSdnf, ' and ' + 'not' + StrOfPerem[j + 1]);
+        end;
+      end;
+      write(fSdnf, ')');
+    end
+    else
+    begin
+      //Read(fSknf, CheckStartFile);
+      if StartFileSknf <> true then
+        write(fSknf, ' and ');
+      StartFileSknf := false;
+      write(fSknf, '(');
+      for var j := 0 to Length(TruthTable[i]) - 2 do     //количество столбцов не считая столбец результата
+      begin
+        if TruthTable[i][j] = false then
+        begin
+          if j = 0 then
+            write(fSknf, StrOfPerem[j + 1] + ' ')
+          else
+            write(fSknf, ' or ' + StrOfPerem[j + 1]);
+        end
+        else
+        begin
+          if j = 0 then
+            write(fSknf, 'not ' + StrOfPerem[j + 1] + ' ')
+          else
+            write(fSknf, ' or ' + 'not' + StrOfPerem[j + 1]);
+        end;
+      end;
+      write(fSknf, ')');
+    end;
+  end;
+  CloseFile(fSdnf);
+  CloseFile(fSknf);
+end;
+
+end.

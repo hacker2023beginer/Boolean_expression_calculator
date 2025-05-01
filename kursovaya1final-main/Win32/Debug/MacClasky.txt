@@ -1,0 +1,1 @@
+Minimization (MacClasky):  not A and C or A and not C

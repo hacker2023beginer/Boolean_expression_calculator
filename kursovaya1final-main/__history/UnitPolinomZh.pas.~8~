@@ -1,0 +1,113 @@
+unit UnitPolinomZh;
+
+interface
+
+uses
+  UnitTruthTable;
+type
+  TBoolStrPair = record
+    Koef: Boolean;
+    Perems: string;
+  end;
+  TMasOfKf = array of TBoolStrPair;
+procedure ZhigalkinPol(TruthTable: TTruth; StrOfPerem: String);
+
+implementation
+
+(*procedure ZhigalkinPol(TruthTable: TTruth; StrOfPerem: String);
+var
+  ZhigalkinKf: TMasOfKf;
+  NumTableStrings: Integer;
+  NumTableСolumn: Integer;
+  NumKfPerem: Integer;
+  ZnachLastKf: Boolean;
+  IndexOfPerem, CounterTruthPerem: Integer;
+begin
+  NumTableStrings := Length(TruthTable) - 1;
+  NumTableСolumn := Length(TruthTable[0]) - 1;
+  SetLength(ZhigalkinKf, NumTableStrings); //коэффициентов столько же, сколько и строк таблицы
+  ZhigalkinKf[0].Koef := TruthTable[0][NumTableСolumn];
+  NumKfPerem := 1;
+  for var i := 1 to NumTableStrings - 1 do
+  begin
+    ZnachLastKf := ZhigalkinKf[Length(ZhigalkinKf) - 1].Koef;
+    for var j := 1 to NumTableStrings do
+    begin
+      CounterTruthPerem := 0;
+      for var k := 0 to NumTableСolumn - 1 do
+      begin
+        if TruthTable[j][k] = true then
+        begin
+          IndexOfPerem := k + 1; //для поиска в строке переменных, где инд. с 1 идет
+          Inc(CounterTruthPerem);
+        end;
+      end;
+      if CounterTruthPerem = i then
+      begin
+        ZhigalkinKf[length(ZhigalkinKf)].Perems := Copy(StrOfPerem, 1, IndexOfPerem);
+        ZhigalkinKf[length(ZhigalkinKf)].Koef := TruthTable[j][NumTableСolumn] xor ZnachLastKf;
+      end;
+    end;
+  end;
+end;*)
+
+procedure ZhigalkinPol(TruthTable: TTruth; StrOfPerem: String);
+var
+  Values: array of Boolean;
+  Coeffs: array of Boolean;
+  N, i, j: Integer;
+  counterZhEl: Integer;
+  f: TextFile;
+begin
+  N := Length(TruthTable); // Кол-во строк
+
+  SetLength(Values, N);
+  SetLength(Coeffs, N);
+
+  // Копируем значения функции (последний столбец)
+  for i := 0 to N - 1 do
+    Values[i] := TruthTable[i][High(TruthTable[i])];
+
+  // Строим треугольник Жегалкина — XOR-цепочка
+  for i := 0 to N - 1 do
+    Coeffs[i] := Values[i];
+
+  for i := 0 to N - 2 do
+    for j := N - 1 downto i + 1 do
+      Coeffs[j] := Coeffs[j] xor Coeffs[j - 1];
+
+  // Вывод коэффициентов
+  //Writeln('Zhigalkin polynomial coefficients:');
+  counterZhEl := 0;
+  AssignFile(f, 'Polinom.txt');
+  Rewrite(f);
+  write(f, 'Zhegalkin polynomial: ');
+  for i := 0 to N - 1 do
+  begin
+    if Coeffs[i] then
+    begin
+      // Определим моном по бинарному представлению номера i
+      //Write('xor ');
+      if i = 0 then
+      begin
+        write(f, Coeffs[i]);
+        write(f, ' xor ');
+      end;
+      if counterZhEl <> 0 then
+        write(f, ' xor ');
+      for j := 0 to Length(TruthTable[0]) - 2 do
+      begin
+        if TruthTable[i][j] then
+        begin
+          write(f, StrOfPerem[j + 1]);//Write(StrOfPerem[j + 1]); // переменные индексируются с 1
+          Inc(counterZhEl);
+        end;
+      end;
+      //Writeln;
+    end;
+  end;
+  CloseFile(f);
+end;
+
+
+end.

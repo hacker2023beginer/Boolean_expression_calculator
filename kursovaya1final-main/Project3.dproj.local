@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.366,=E:\делфи\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.022,=E:\делфи\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.400,E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\UnitMacClasky2.pas=E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.014,E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\UnitGPT.pas=</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.915,E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\UnitGPT.pas=E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.593,E:\делфи\Unit1.pas=E:\делфи\пробник курсача\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.453,=E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.607,=E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.708,E:\делфи\Project3.dproj=E:\делфи\пробник курсача\Project3.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.181,=E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.260,=E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.994,=E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.725,E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\UnitPolinomZh.pas=E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.349,E:\делфи\пробник курсача\UnitMain.pas=E:\делфи\пробник курсача\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.231,=E:\делфи\пробник курсача\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.098,=E:\ОАиП лаба\2сем\новый курсач\курсач форма\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.505,E:\ОАиП лаба\2сем\новый курсач\курсач форма\Unit1.pas=E:\ОАиП лаба\2сем\новый курсач\курсач форма\SdnfSknf.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.962,E:\делфи\пробник курсача\UnitTruthTable.pas=E:\делфи\пробник курсача\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.593,E:\делфи\Unit1.dfm=E:\делфи\пробник курсача\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.617,E:\ОАиП лаба\2сем\новый курсач\курсач форма\SdnfSknf.pas=E:\ОАиП лаба\2сем\новый курсач\курсач форма\UnitSdnfSknf.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.187,E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\UnitBtnCapabilities.pas=E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.230,E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\UnitMacClasky.pas=E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.332,E:\ОАиП лаба\2сем\новый курсач\курсач форма2\kursovaya1final-main\UnitMacClasky.pas=</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.349,E:\делфи\пробник курсача\UnitMain.dfm=E:\делфи\пробник курсача\Unit1.dfm</Transaction>
+  </Transactions>
+</BorlandProject>
