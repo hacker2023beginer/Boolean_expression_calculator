@@ -1,0 +1,1 @@
+Zhegalkin polynomial: TRUE xor C xor ABC
